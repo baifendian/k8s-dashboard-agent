@@ -51,28 +51,34 @@ def get_k8s_data(url,params = {},timeout = 10 ):
         con = httplib.HTTPConnection(settings.K8S_IP, settings.K8S_PORT, timeout=timeout)
         con.request('GET', url, json.dumps(params, ensure_ascii=False))
         resp = con.getresponse()
+        if not resp:
+            s = 'get k8s data resp is not valid : %s' % resp
+            logging.error( s )
+            return generate_failure( s )
+
+        if resp.status == 200:
+            s = resp.read()
+            logging.debug( 'get k8s data response : %s' % s )
+            return generate_success( data = json.loads(s) )
+        else:
+            s = 'get k8s data status is not 200 : %s' % resp.status
+            logging.error( s )
+            return generate_failure( s )
     except Exception, e:
-        logging.error("query k8s data occured exception : %s", str(e))
-            
-    jo = None
-    if resp and resp.status == 200:
-        s = resp.read()
-        logging.debug("k8s response : %s", s)
-        try:
-	        jo = json.loads(s)
-        except Exception, e:
-            logging.error("k8s response not json")
-        return jo
+        s = "get k8s data occured exception : %s" % str(e)
+        logging.error(s)
+        return generate_failure( s )
+    
 
 @csrf_exempt
 @return_http_json
 def get_pod_list(request,namespace):
     pod_detail_info = get_k8s_data( request.path )
-    if pod_detail_info == None:
-        return generate_failure()
+    if pod_detail_info['code'] == 0:
+        return generate_failure( pod_detail_info['msg'] )
 
     retu_data = []
-    for item in pod_detail_info['items']:
+    for item in pod_detail_info['data']['items']:
         d = {}
         d['Name'] = item['metadata']['name']
         
