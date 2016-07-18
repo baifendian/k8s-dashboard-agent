@@ -2,7 +2,7 @@
 kubernetes native api agent for the web UI dashboard
 
 * 将k8s的API返回的复杂数据的处理放到后端进行
-* 避免出现跨域请求拒绝的问题，方便 dashboard
+* 避免出现跨域请求拒绝的问题，方便 dashboard 的开发工作
 
 ### 开发环境
 <pre>
