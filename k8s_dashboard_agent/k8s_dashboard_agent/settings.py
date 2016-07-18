@@ -1,3 +1,5 @@
+# encoding:utf-8
+
 """
 Django settings for k8s_dashboard_agent project.
 
@@ -36,6 +38,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'kd_agent'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -51,8 +54,9 @@ ROOT_URLCONF = 'k8s_dashboard_agent.urls'
 
 WSGI_APPLICATION = 'k8s_dashboard_agent.wsgi.application'
 
-
-K8S_ADDR = 'http://172.24.3.150:8080/'
+# 提供k8s服务的地址
+K8S_IP = '172.24.3.150'
+K8S_PORT = 8080
 
 
 
