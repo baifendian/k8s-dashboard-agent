@@ -27,7 +27,9 @@ logging.config.dictConfig( LOGGING )
 def return_http_json(func):
     def wrapper( *arg1,**arg2 ):
         d = func( *arg1,**arg2 )
-        return HttpResponse( json.dumps(d) )
+        obj = HttpResponse( json.dumps(d) )
+        obj['Access-Control-Allow-Origin'] = '*'
+        return obj
     return wrapper
 
 def generate_retu_info( code,msg,**ext_info ):
@@ -67,8 +69,21 @@ def get_k8s_data(url,params = {},timeout = 10 ):
 def get_pod_list(request,namespace):
     pod_detail_info = get_k8s_data( request.path )
     if pod_detail_info == None:
-        return generate_failure(  )
+        return generate_failure()
 
-    return generate_success( data=data )
+    retu_data = []
+    for item in pod_detail_info['items']:
+        d = {}
+        d['Name'] = item['metadata']['name']
+        
+        d['Ready'] = 'None'
+        d['Status'] = 'None'
+        d['Restarts'] = 'None'
+      
+        d['CreationTime'] = item['metadata']['creationTimestamp']
+        d['Node'] = item['spec']['nodeName']
+        retu_data.append(d)
+
+    return generate_success( data = retu_data )
 
 
