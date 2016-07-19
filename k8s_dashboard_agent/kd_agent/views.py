@@ -4,6 +4,7 @@ import json
 import time
 import logging
 import httplib
+import traceback
 
 from django.conf import settings
 from django.utils import timezone
@@ -18,16 +19,17 @@ from django.views.decorators.csrf import csrf_exempt
 
 from kd_agent.logconfig import LOGGING
 
-
-
 logging.config.dictConfig( LOGGING )
-
 
 # 一个装饰器，将原函数返回的json封装成response对象
 def return_http_json(func):
     def wrapper( *arg1,**arg2 ):
-        d = func( *arg1,**arg2 )
-        obj = HttpResponse( json.dumps(d) )
+        try:
+            retu_obj = func( *arg1,**arg2 )
+        except Exception as reason:
+            traceback.print_exc()  
+            retu_obj = generate_failure( str(reason) )
+        obj = HttpResponse( json.dumps(retu_obj) )
         obj['Access-Control-Allow-Origin'] = '*'
         return obj
     return wrapper
@@ -43,6 +45,10 @@ def generate_success(**ext_info):
 
 def generate_failure( msg,**ext_info ):
     return generate_retu_info( 0,msg,**ext_info )
+
+# 去掉时间字符串 2016-07-15T14:38:02Z 中的T、Z
+def trans_time_str(time_str):
+    return time_str[0:10] + ' ' + time_str[11:19]
 
 # 根据原生的API获取k8s的数据
 def get_k8s_data(url,params = {},timeout = 10 ):
@@ -79,17 +85,105 @@ def get_pod_list(request,namespace):
 
     retu_data = []
     for item in pod_detail_info['data']['items']:
-        d = {}
-        d['Name'] = item['metadata']['name']
-        
-        d['Ready'] = 'None'
-        d['Status'] = 'None'
-        d['Restarts'] = 'None'
-      
-        d['CreationTime'] = item['metadata']['creationTimestamp']
-        d['Node'] = item['spec']['nodeName']
-        retu_data.append(d)
+        record = {}
+        retu_data.append(record)
+        record['Name'] = item['metadata']['name']
+        record['CreationTime'] = trans_time_str(item['metadata']['creationTimestamp'])
+        record['Node'] = item['spec']['nodeName']
+
+        containerStatuses = item['status']['containerStatuses']
+        total = len(containerStatuses)
+        running = 0
+        for cItem in containerStatuses:
+            if cItem['state'].get( 'running' ) != None:
+                running += 1
+        record['Ready'] = '%s / %s' % ( running,total )
+
+        if total == running:
+            record['Status'] = 'Running'
+        else:
+            #TODO:此处需要测试
+            statusArr = []
+            for cItem in containerStatuses:
+                statusArr.append( cItem['state']['waiting']['reason'] )   
+            record['Status'] = '{ %s }' % str(',').join( set(statusArr) )
+
+        restartCountArr = []
+        for cItem in containerStatuses:
+            restartCountArr.append( cItem['restartCount'] )
+        record['Restarts'] = sum(restartCountArr)
 
     return generate_success( data = retu_data )
+
+
+@csrf_exempt
+@return_http_json
+def get_service_list(request,namespace):
+    service_detail_info = get_k8s_data( request.path )
+    if service_detail_info['code'] == 0:
+        return generate_failure( service_detail_info['msg'] )
+
+    retu_data = []
+    for item in service_detail_info['data']['items']:
+        record = {}
+        retu_data.append(record) 
+
+        record['Name'] = item['metadata']['name']
+        record['ClusterIP'] = item['spec']['clusterIP']
+        record['ExternalIP'] = '<None-IP>'      #TODO:mini的测试暂时没有这个东西，这里暂时填充 <none-IP>
+        record['CreationTime'] = trans_time_str( item['metadata']['creationTimestamp'] )
+        
+        ports_info_arr = []
+        for cItem in item['spec']['ports']:
+            ports_info_arr.append( '%s/%s' % ( cItem['port'],cItem['protocol'] ) )
+        record['Ports'] = str(',').join(ports_info_arr)
+
+        if not item['spec'].get('selector'):
+            record['Selector'] = '<None>'
+        else:
+            selector_info_arr = []
+            for k,v in item['spec']['selector'].iteritems():
+                selector_info_arr.append( '%s=%s' % (k,v) )
+            record['Selector'] = str(',').join( selector_info_arr )
+
+    return generate_success( data = retu_data )
+
+
+@csrf_exempt
+@return_http_json
+def get_rc_list(request,namespace):
+    rc_detail_info = get_k8s_data( request.path )
+    if rc_detail_info['code'] == 0:
+        return generate_failure( rc_detail_info['msg'] )
+
+    retu_data = []
+    for item in rc_detail_info['data']['items']:
+        record = {}
+        retu_data.append(record) 
+
+        record['Name'] = item['metadata']['name']
+        record['Desired'] = item['spec']['replicas']
+        record['Current'] = item['status']['replicas']      #TODO:Current暂时这样取值
+        record['CreationTime'] = trans_time_str( item['metadata']['creationTimestamp'] )
+        
+        container_arr = []
+        image_arr = []
+        for cItem in item['spec']['template']['spec']['containers']:
+            container_arr.append( cItem['name'] )
+            image_arr.append( cItem['image'] )
+        record['Containers'] = str(',').join( container_arr )
+        record['Images'] = str(',').join( image_arr )
+        
+        if not item['spec'].get('selector'):
+            record['Selector'] = '<None>'
+        else:
+            selector_info_arr = []
+            for k,v in item['spec']['selector'].iteritems():
+                selector_info_arr.append( '%s=%s' % (k,v) )
+            record['Selector'] = str(',').join( selector_info_arr )
+
+    return generate_success( data = retu_data )
+
+
 
 
