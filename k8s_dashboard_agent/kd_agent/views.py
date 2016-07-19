@@ -26,9 +26,11 @@ def return_http_json(func):
     def wrapper( *arg1,**arg2 ):
         try:
             retu_obj = func( *arg1,**arg2 )
+            logging.info( 'execute func %s success' % (func) )
         except Exception as reason:
-            traceback.print_exc()  
             retu_obj = generate_failure( str(reason) )
+            logging.error( 'execute func %s failure : %s' % (func,str(reason)) )
+
         obj = HttpResponse( json.dumps(retu_obj) )
         obj['Access-Control-Allow-Origin'] = '*'
         return obj
@@ -79,8 +81,10 @@ def get_k8s_data(url,params = {},timeout = 10 ):
 @csrf_exempt
 @return_http_json
 def get_pod_list(request,namespace):
+    logging.info( 'call get_pod_list request.path : %s , namespace : %s' % (request.path,namespace) )
     pod_detail_info = get_k8s_data( request.path )
     if pod_detail_info['code'] == 0:
+        logging.error( 'call get_pod_list query k8s data error : %s' % pod_detail_info['msg'] )
         return generate_failure( pod_detail_info['msg'] )
 
     retu_data = []
@@ -112,15 +116,19 @@ def get_pod_list(request,namespace):
         for cItem in containerStatuses:
             restartCountArr.append( cItem['restartCount'] )
         record['Restarts'] = sum(restartCountArr)
-
+    
+    logging.debug( 'call get_pod_list query k8s data : %s' % retu_data )
+    logging.info( 'call get_pod_list query k8s data successful' )
     return generate_success( data = retu_data )
 
 
 @csrf_exempt
 @return_http_json
 def get_service_list(request,namespace):
+    logging.info( 'call get_service_list request.path : %s , namespace : %s' % (request.path,namespace) )
     service_detail_info = get_k8s_data( request.path )
     if service_detail_info['code'] == 0:
+        logging.error( 'call get_service_list query k8s data error : %s' % service_detail_info['msg'] )
         return generate_failure( service_detail_info['msg'] )
 
     retu_data = []
@@ -146,14 +154,18 @@ def get_service_list(request,namespace):
                 selector_info_arr.append( '%s=%s' % (k,v) )
             record['Selector'] = str(',').join( selector_info_arr )
 
+    logging.debug( 'call get_service_list query k8s data : %s' % retu_data )
+    logging.info( 'call get_service_list query k8s data successful' )
     return generate_success( data = retu_data )
 
 
 @csrf_exempt
 @return_http_json
 def get_rc_list(request,namespace):
+    logging.info( 'call get_rc_list request.path : %s , namespace : %s' % (request.path,namespace) )
     rc_detail_info = get_k8s_data( request.path )
     if rc_detail_info['code'] == 0:
+        logging.error( 'call get_rc_list query k8s data error : %s' % rc_detail_info['msg'] )
         return generate_failure( rc_detail_info['msg'] )
 
     retu_data = []
@@ -181,7 +193,9 @@ def get_rc_list(request,namespace):
             for k,v in item['spec']['selector'].iteritems():
                 selector_info_arr.append( '%s=%s' % (k,v) )
             record['Selector'] = str(',').join( selector_info_arr )
-
+    
+    logging.debug( 'call get_rc_list query k8s data : %s' % retu_data )
+    logging.info( 'call get_rc_list query k8s data successful' )
     return generate_success( data = retu_data )
 
 
