@@ -94,8 +94,7 @@ def get_pod_list(request,namespace):
         record['Name'] = item['metadata']['name']
         record['CreationTime'] = trans_time_str(item['metadata']['creationTimestamp'])
         record['Node'] = item['spec']['nodeName']
-        record['DetailInfo'] = item
-
+        record['DetailInfo'] = trans_obj_to_easy_dis(item,'PodConfig')
 
         containerStatuses = item['status']['containerStatuses']
         total = len(containerStatuses)
@@ -142,8 +141,7 @@ def get_service_list(request,namespace):
         record['ClusterIP'] = item['spec']['clusterIP']
         record['ExternalIP'] = '<None-IP>'      #TODO:mini的测试暂时没有这个东西，这里暂时填充 <none-IP>
         record['CreationTime'] = trans_time_str( item['metadata']['creationTimestamp'] )
-        record['DetailInfo'] = item
-
+        record['DetailInfo'] = trans_obj_to_easy_dis(item,'ServiceConfig')
 
         ports_info_arr = []
         for cItem in item['spec']['ports']:
@@ -181,7 +179,7 @@ def get_rc_list(request,namespace):
         record['Desired'] = item['spec']['replicas']
         record['Current'] = item['status']['replicas']      #TODO:Current暂时这样取值
         record['CreationTime'] = trans_time_str( item['metadata']['creationTimestamp'] )
-        record['DetailInfo'] = item
+        record['DetailInfo'] = trans_obj_to_easy_dis(item,'RCConfig')
 
         container_arr = []
         image_arr = []
@@ -205,4 +203,40 @@ def get_rc_list(request,namespace):
 
 
 
+def trans_obj_to_easy_dis(obj_info,head_str = 'obj'):
+    '''
+    将一个对象的所有属性转换成一种方便显示的方式，只支持dict、list这两种复合类型
+    exam = { 'a':123,'b':[1,2,3] }
+    将会被转换成：
+    [
+        'a = 123',
+        'b[0] = 1',
+        'b[1] = 2',
+        'b[3] = 3'
+    ]
+    '''
+    def trans_func( obj,head_str = 'obj' ):
+        if isinstance( obj,dict ):
+            temp = []
+            for k in obj:
+                temp += trans_func( obj[k],"%s['%s']" % ( head_str,str(k) ) )
+            return temp
+        elif isinstance( obj,list ):
+            temp = []
+            for i in range( len(obj) ):
+                temp += trans_func( obj[i],head_str+str( '[%s]' % i ) )
+            return temp
+        else:
+            return [ '%s = %s' % ( head_str,str(obj) ) ]
+    retu_list = trans_func( obj_info,head_str )
+    return retu_list
 
+
+
+
+
+
+
+    
+    
+    
