@@ -30,6 +30,7 @@ def return_http_json(func):
         except Exception as reason:
             retu_obj = generate_failure( str(reason) )
             logging.error( 'execute func %s failure : %s' % (func,str(reason)) )
+            traceback.print_exc()
 
         obj = HttpResponse( json.dumps(retu_obj) )
         obj['Access-Control-Allow-Origin'] = '*'
@@ -110,7 +111,7 @@ def get_pod_list(request,namespace):
             #TODO:此处需要测试
             statusArr = []
             for cItem in containerStatuses:
-                statusArr.append( cItem['state']['waiting']['reason'] )   
+                statusArr.append( cItem['state'][ cItem['state'].keys()[0] ]['reason'] )   
             record['Status'] = '{ %s }' % str(',').join( set(statusArr) )
 
         restartCountArr = []
