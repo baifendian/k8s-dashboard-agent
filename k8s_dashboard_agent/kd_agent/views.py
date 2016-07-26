@@ -94,6 +94,8 @@ def get_pod_list(request,namespace):
         record['Name'] = item['metadata']['name']
         record['CreationTime'] = trans_time_str(item['metadata']['creationTimestamp'])
         record['Node'] = item['spec']['nodeName']
+        record['DetailInfo'] = item
+
 
         containerStatuses = item['status']['containerStatuses']
         total = len(containerStatuses)
@@ -140,7 +142,9 @@ def get_service_list(request,namespace):
         record['ClusterIP'] = item['spec']['clusterIP']
         record['ExternalIP'] = '<None-IP>'      #TODO:mini的测试暂时没有这个东西，这里暂时填充 <none-IP>
         record['CreationTime'] = trans_time_str( item['metadata']['creationTimestamp'] )
-        
+        record['DetailInfo'] = item
+
+
         ports_info_arr = []
         for cItem in item['spec']['ports']:
             ports_info_arr.append( '%s/%s' % ( cItem['port'],cItem['protocol'] ) )
@@ -177,7 +181,8 @@ def get_rc_list(request,namespace):
         record['Desired'] = item['spec']['replicas']
         record['Current'] = item['status']['replicas']      #TODO:Current暂时这样取值
         record['CreationTime'] = trans_time_str( item['metadata']['creationTimestamp'] )
-        
+        record['DetailInfo'] = item
+
         container_arr = []
         image_arr = []
         for cItem in item['spec']['template']['spec']['containers']:
