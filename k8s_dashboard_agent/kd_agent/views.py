@@ -236,23 +236,24 @@ def trans_obj_to_easy_dis(obj_info,head_str = 'obj'):
 
 @csrf_exempt
 @return_http_json
-def get_mytask_list(request, namespace):
+def get_mytask_list(request):    
+    logging.info( 'call get_mytask_list' )
     retu_data = []
-    for i in Schedule_Status.objects.filter(status=3L):
-        recode = {}
-        retu_data.append(record) 
+    for record in Schedule_Status.objects.filter(status=3L):
+        d = {}
+        retu_data.append(d) 
         
-        recode['all_list'] = Schedule_Status.objects.filter(status=3L)
-        recode['task'] = Schedule_Status.objects.filter(status=3L).task
-        recode['category'] = Schedule_Status.objects.filter(status=3L).category
-        recode['ready_time'] = Schedule_Status.objects.filter(status=3L).ready_time
-        recode['running_time'] = Schedule_Status.objects.filter(status=3L).running_time
-        recode['leave_time'] = Schedule_Status.objects.filter(status=3L).leave_time
-        recode['status'] = Schedule_Status.objects.filter(status=3L).status
-        recode['result'] = Schedule_Status.objects.filter(status=3L).result
+        d['all_list'] = dict(record)
+        d['task'] = record.task
+        d['category'] = record.category
+        d['ready_time'] = record.ready_time
+        d['running_time'] = record.running_time
+        d['leave_time'] = record.leave_time
+        d['status'] = record.status
+        d['result'] = record.result
             
-    logging.debug( 'call get_rc_list query k8s data : %s' % retu_data )
-    logging.info( 'call get_rc_list query k8s data successful' )
+    logging.debug( 'call get_mytask_list query bdms data : %s' % retu_data )
+    logging.info( 'call get_mytask_list query bdms data successful' )
     return generate_success( data = retu_data )
 
 
