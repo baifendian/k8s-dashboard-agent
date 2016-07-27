@@ -242,19 +242,24 @@ def get_mytask_list(request):
     for record in Schedule_Status.objects.filter(status=3L):
         d = {}
         retu_data.append(d) 
-        
-        d['all_list'] = dict(record)
-        d['task'] = record.task
+    
+        d['task'] = str(record.task)
         d['category'] = record.category
-        d['ready_time'] = record.ready_time
-        d['running_time'] = record.running_time
-        d['leave_time'] = record.leave_time
+        d['ready_time'] = format_datetime_obj(record.ready_time)
+        d['running_time'] = format_datetime_obj(record.running_time)
+        d['leave_time'] = format_datetime_obj(record.leave_time)
         d['status'] = record.status
         d['result'] = record.result
-            
+    
     logging.debug( 'call get_mytask_list query bdms data : %s' % retu_data )
     logging.info( 'call get_mytask_list query bdms data successful' )
     return generate_success( data = retu_data )
+
+def format_datetime_obj(datetime_obj):
+    if datetime_obj:
+        return datetime_obj.strftime("%Y-%m-%d %H:%M:%S")
+    else:
+        return '<None>'
 
 
 

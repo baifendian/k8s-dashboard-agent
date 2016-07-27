@@ -207,6 +207,9 @@ class Task(models.Model):
             'scripttype_id':self.scripttype_id,
         }
     
+    class Meta:
+        db_table = 'ide_task'
+
     def to_dict(self):
         return {
                 'id': self.id,'name':self.name,
@@ -288,7 +291,10 @@ class Schedule_Status(models.Model):
     
     def __unicode__(self):
         return self.task.name
-    
+
+    class Meta:
+        db_table = 'ide_schedule_status'
+
     def status_info(self):
         '''返回简单调度信息
         '''
