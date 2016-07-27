@@ -5,6 +5,7 @@ import time
 import logging
 import httplib
 import traceback
+import json
 
 from django.conf import settings
 from django.utils import timezone
@@ -18,6 +19,7 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 
 from kd_agent.logconfig import LOGGING
+from kd_agent.models import Schedule_Status
 
 logging.config.dictConfig( LOGGING )
 
@@ -232,6 +234,26 @@ def trans_obj_to_easy_dis(obj_info,head_str = 'obj'):
     retu_list = trans_func( obj_info,head_str )
     return retu_list
 
+@csrf_exempt
+@return_http_json
+def get_mytask_list(request, namespace):
+    retu_data = []
+    for i in Schedule_Status.objects.filter(status=3L):
+        recode = {}
+        retu_data.append(record) 
+        
+        recode['all_list'] = Schedule_Status.objects.filter(status=3L)
+        recode['task'] = Schedule_Status.objects.filter(status=3L).task
+        recode['category'] = Schedule_Status.objects.filter(status=3L).category
+        recode['ready_time'] = Schedule_Status.objects.filter(status=3L).ready_time
+        recode['running_time'] = Schedule_Status.objects.filter(status=3L).running_time
+        recode['leave_time'] = Schedule_Status.objects.filter(status=3L).leave_time
+        recode['status'] = Schedule_Status.objects.filter(status=3L).status
+        recode['result'] = Schedule_Status.objects.filter(status=3L).result
+            
+    logging.debug( 'call get_rc_list query k8s data : %s' % retu_data )
+    logging.info( 'call get_rc_list query k8s data successful' )
+    return generate_success( data = retu_data )
 
 
 
