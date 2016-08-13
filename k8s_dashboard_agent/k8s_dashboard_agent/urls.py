@@ -7,5 +7,6 @@ urlpatterns = patterns('',
     # url(r'^$', 'k8s_dashboard_agent.views.home', name='home'),
     # url(r'^blog/', include('blog.urls')),
 
-    url(r'^', include('kd_agent.urls'))
+    url(r'^k8s/', include('kd_agent.urls')),
+
 )
