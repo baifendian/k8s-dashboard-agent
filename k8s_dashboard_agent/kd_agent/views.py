@@ -5,7 +5,6 @@ import time
 import logging
 import httplib
 import traceback
-import requests
 
 from django.conf import settings
 from django.utils import timezone
@@ -37,6 +36,8 @@ def return_http_json(func):
 
         obj = HttpResponse( json.dumps(retu_obj) )
         obj['Access-Control-Allow-Origin'] = '*'
+        obj['Access-Control-Allow-Methods'] = 'GET,POST'
+        obj['Access-Control-Allow-Headers'] = 'X-CSRFToken'
         obj['Content-Type'] = 'application/json'
         return obj
     return wrapper
@@ -273,6 +274,7 @@ def format_datetime_obj(datetime_obj):
 @csrf_exempt
 @return_http_json
 def get_mytask_graph(request):
+    import requests
     logging.info( 'call get_mytask_graph' )
     url1 = 'http://' + settings.BDMS_IP + ':' + settings.BDMS_PORT + '/accounts/login/'  #模拟登陆BDMS
     url2 = 'http://' + settings.BDMS_IP + ':' + settings.BDMS_PORT + '/ide/schedule/directedgraphdata/?username=all&status=all&taskname=&env=0'  #任务运行网络图 rest api
@@ -333,7 +335,9 @@ def generate_temp_data(id):
 @csrf_exempt
 @return_http_json
 def mytask_get_old_records(request):
-    oldestrecordid = int(request.GET.get('oldestrecordid'))
+    logging.debug( 'call mytask_get_old_records : %s ' % request )
+    
+    oldestrecordid = int(request.POST.get('oldestrecordid'))
     retu_data = []
     for i in range(10):
         retu_data.append( generate_temp_data(oldestrecordid - 1 - i) )
@@ -347,7 +351,7 @@ def mytask_check_has_new_records(request):
 @csrf_exempt
 @return_http_json
 def mytask_get_new_records(request):
-    newestrecordid = int(request.GET.get('newestrecordid'))
+    newestrecordid = int(request.POST.get('newestrecordid'))
     retu_data = []
     for i in range(3):
         retu_data.append( generate_temp_data(newestrecordid + 3 - i) )
