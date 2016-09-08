@@ -20,7 +20,7 @@ LOGGING = {
     }, 
     'handlers': { 
         'file': { 
-            'level':'INFO', 
+            'level':'DEBUG', 
             'class':'logging.FileHandler', 
             'formatter': 'complete', 
             'filename' : os.path.join(cur_dir, 'logs/k8sagent.log').replace('{}','/') 
