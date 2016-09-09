@@ -54,7 +54,11 @@ ROOT_URLCONF = 'k8s_dashboard_agent.urls'
 
 WSGI_APPLICATION = 'k8s_dashboard_agent.wsgi.application'
 
-
+INFLUXDB_IP = 'k8sinfluxapi.bfdcloud.com'
+INFLUXDB_PORT = 80
+INFLUXDB_USERNAME = 'admin'
+INFLUXDB_PASSWORD = 'admin'
+INFLUXDB_DATABASE = 'k8s'
 
 
 # Internationalization
