@@ -66,12 +66,12 @@ import urllib
 import time
 from kd_agent.influxdbquerystrmanager import InfluxDBQueryStrManager as ISM
 
-def get_influxdb_data(sql_str,db = settings.INFLUXDB_DATABASE,epoch='s',timeout = 10 ):
+def get_influxdb_data(sql_str,db = settings.INFLUXDB_DATABASE,epoch='s',timeout = 600 ):
     params = { 'q':sql_str, 'db':db, 'epoch':epoch }
     url_str = '/query?%s' % urllib.urlencode( params ) 
     resp = None
     try:
-        con = httplib.HTTPConnection(settings.INFLUXDB_IP, settings.INFLUXDB_PORT, timeout=10)
+        con = httplib.HTTPConnection(settings.INFLUXDB_IP, settings.INFLUXDB_PORT, timeout=timeout)
         con.request('GET',url_str)
         resp = con.getresponse()
         if not resp:
@@ -158,7 +158,7 @@ def generate_time_range( minutes ):
 
 @csrf_exempt
 @return_http_json
-def get_cluster_cpu_info(request,namespace,minutes):
+def get_cluster_cpu_info(request,minutes):
     measurements = [ ISM.M_CPU_USAGE,ISM.M_CPU_LIMIT,ISM.M_CPU_REQUEST ]
     time_range = generate_time_range( minutes )
     sql_str_dict = {}
@@ -172,7 +172,7 @@ def get_cluster_cpu_info(request,namespace,minutes):
 
 @csrf_exempt
 @return_http_json
-def get_cluster_memory_info(request,namespace,minutes):
+def get_cluster_memory_info(request,minutes):
     measurements = [ ISM.M_MEMORY_USAGE,ISM.M_MEMORY_WORKINGSET,ISM.M_MEMORY_LIMIT,ISM.M_MEMORY_REQUEST ]
     time_range = generate_time_range( minutes )
     sql_str_dict = {}
@@ -187,7 +187,7 @@ def get_cluster_memory_info(request,namespace,minutes):
 
 @csrf_exempt
 @return_http_json
-def get_cluster_network_info(request,namespace,minutes):
+def get_cluster_network_info(request,minutes):
     measurements = [ ISM.M_NETWORK_TRANSMIT,ISM.M_NETWORK_RECEIVE ]
     time_range = generate_time_range( minutes )
     sql_str_dict = {}
@@ -202,7 +202,7 @@ def get_cluster_network_info(request,namespace,minutes):
 
 @csrf_exempt
 @return_http_json
-def get_cluster_filesystem_info(request,namespace,minutes):
+def get_cluster_filesystem_info(request,minutes):
     measurements = [ ISM.M_FILESYSTEM_USAGE,ISM.M_FILESYSTEM_LIMIT ]
     time_range = generate_time_range( minutes )
     sql_str_dict = {}
