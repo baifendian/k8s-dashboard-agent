@@ -113,19 +113,29 @@ def trans_struct_to_easy_dis( filter_data_dict ):
         'xaxis':[]
     }
 
+    # 先把n条线数据的所有时间点都汇总起来，然后排序（避免出现某条线在某个时间点没有数据，被filter_valid_data筛掉的问题）
     time_points = set()
+    for measurement,data_arr in filter_data_dict.items():
+        for item in data_arr:
+            time_points.add( item[0] )
+    time_points = list(time_points)
+    time_points.sort()
+
     for measurement,data_arr in filter_data_dict.items():
         series_obj = {
             'legend':d[measurement],
-            'data':[]
+            'data':[None] * len(time_points)
         }
         for item in data_arr:
-            time_points.add( item[0] )
-            series_obj['data'].append( item[1] )        
+            # 如果某个数据点的time在time_point中，则将series['data']的相应位置置为数据点的值
+            # 否则，什么都不做
+            try:
+                index = time_points.index( item[0] )
+                series_obj['data'][index] = item[1]
+            except:
+                pass
         retu_data['series'].append(series_obj)
     
-    time_points = list(time_points)
-    time_points.sort()
     retu_data['xaxis'] = map( map_timestamp_to_localtime,time_points )
     return retu_data
 
