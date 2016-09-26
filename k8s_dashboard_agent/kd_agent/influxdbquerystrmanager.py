@@ -40,18 +40,18 @@ class InfluxDBQueryStrManager:
     def get_measurement_disname_dict():
         ISM = InfluxDBQueryStrManager
         return {
-            ISM.M_CPU_USAGE:'CPU Usage',
-            ISM.M_CPU_LIMIT:'CPU Limit',
-            ISM.M_CPU_REQUEST:'CPU Request',
+            ISM.M_CPU_USAGE:'Usage',
+            ISM.M_CPU_LIMIT:'Limit',
+            ISM.M_CPU_REQUEST:'Request',
 
-            ISM.M_MEMORY_USAGE:'Memory Usage',
-            ISM.M_MEMORY_WORKINGSET:'Memory Working Set',
-            ISM.M_MEMORY_LIMIT:'Memory Limit',
-            ISM.M_MEMORY_REQUEST:'Memory Request',
+            ISM.M_MEMORY_USAGE:'Usage',
+            ISM.M_MEMORY_WORKINGSET:'Working Set',
+            ISM.M_MEMORY_LIMIT:'Limit',
+            ISM.M_MEMORY_REQUEST:'Request',
 
-            ISM.M_NETWORK_TRANSMIT:'Network Transmit',
-            ISM.M_NETWORK_RECEIVE:'Network Receive',
+            ISM.M_NETWORK_TRANSMIT:'Transmit',
+            ISM.M_NETWORK_RECEIVE:'Receive',
 
-            ISM.M_FILESYSTEM_USAGE:'Filesystem Usage',
-            ISM.M_FILESYSTEM_LIMIT:'Filesystem Limit'
+            ISM.M_FILESYSTEM_USAGE:'Usage',
+            ISM.M_FILESYSTEM_LIMIT:'Limit'
         }
